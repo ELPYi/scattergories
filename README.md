@@ -2,6 +2,14 @@
 
 A real-time multiplayer Scattergories party game built with React, Node.js, and Socket.IO.
 
+<p align="center">
+  <img src="screenshots/landing-desktop.png" alt="Landing Page - Desktop" width="700" />
+</p>
+
+<p align="center">
+  <img src="screenshots/landing-mobile.png" alt="Landing Page - Mobile" width="250" />
+</p>
+
 ## Features
 
 - **Real-time multiplayer** — Create or join rooms with a 4-letter code
