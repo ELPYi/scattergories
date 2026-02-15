@@ -1,5 +1,6 @@
 import express from 'express';
 import { createServer } from 'http';
+import path from 'path';
 import cors from 'cors';
 import { setupSocketIO } from './socket';
 import { cleanupStaleRooms } from './roomManager';
@@ -15,6 +16,13 @@ setupSocketIO(httpServer);
 // Health check
 app.get('/health', (_, res) => {
   res.json({ status: 'ok' });
+});
+
+// Serve built client in production
+const clientDist = path.join(__dirname, '../../client/dist');
+app.use(express.static(clientDist));
+app.get('*', (_req, res) => {
+  res.sendFile(path.join(clientDist, 'index.html'));
 });
 
 // Cleanup stale rooms every 10 minutes
