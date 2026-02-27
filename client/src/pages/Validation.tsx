@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { useGame } from '../context/GameContext';
 import { useI18n } from '../context/I18nContext';
+import { translateCategory } from '../lib/categoryTranslations';
 
 export default function Validation() {
   const { state, submitVotes } = useGame();
-  const { t } = useI18n();
+  const { t, language } = useI18n();
   const [votes, setVotes] = useState<{ [catIndex: number]: { [playerId: string]: boolean } }>({});
   const [submitted, setSubmitted] = useState(false);
 
@@ -97,7 +98,7 @@ export default function Validation() {
           return (
             <div key={catIdx} className="card mb-3">
               <h3 className="font-bold text-teal-300 text-sm mb-2">
-                {catIdx + 1}. {cat}
+                {catIdx + 1}. {translateCategory(cat, language)}
               </h3>
               <div className="space-y-1">
                 {myData && (

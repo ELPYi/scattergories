@@ -88,8 +88,6 @@ const ALL_CATEGORIES: string[] = [
   'Fairy Tales',
 
   // ── Places ─────────────────────────────────────
-  'U.S. Cities',
-  'U.S. States',
   'World Capitals',
   'Famous Landmarks',
   'Tourist Attractions',
@@ -338,7 +336,6 @@ const ALL_CATEGORIES: string[] = [
   'Things at a Food Court',
   'Things at a Petting Zoo',
   'Things at a Water Park',
-  'Things at a Tailgate',
   'Things at a Farmers Market',
   'Things at a Haunted House',
   'Things at a Spa',

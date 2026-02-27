@@ -3,10 +3,11 @@ import confetti from 'canvas-confetti';
 import { useGame } from '../context/GameContext';
 import { useI18n } from '../context/I18nContext';
 import { audio } from '../lib/audio';
+import { translateCategory } from '../lib/categoryTranslations';
 
 export default function FinalResults() {
   const { state, isHost, playAgain } = useGame();
-  const { t } = useI18n();
+  const { t, language } = useI18n();
 
   const sortedPlayers = [...state.playerScores].sort((a, b) => b.totalScore - a.totalScore);
   const winner = sortedPlayers[0];
@@ -96,7 +97,7 @@ export default function FinalResults() {
                 return (
                   <div key={catIdx} className="mb-2 last:mb-0">
                     <p className="text-xs text-primary-300 font-bold mb-1">
-                      {catIdx + 1}. {cat}
+                      {catIdx + 1}. {translateCategory(cat, language)}
                     </p>
                     <div className="space-y-1">
                       {results.map((r) => {

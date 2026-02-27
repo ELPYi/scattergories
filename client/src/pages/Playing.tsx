@@ -4,10 +4,11 @@ import { useI18n } from '../context/I18nContext';
 import { useTimer } from '../hooks/useTimer';
 import { socket } from '../socket';
 import { audio } from '../lib/audio';
+import { translateCategory } from '../lib/categoryTranslations';
 
 export default function Playing() {
   const { state, submitAnswers } = useGame();
-  const { t } = useI18n();
+  const { t, language } = useI18n();
   const secondsLeft = useTimer(state.timerEndsAt);
   const [answers, setAnswers] = useState<{ [key: number]: string }>({});
   const [submitted, setSubmitted] = useState(false);
@@ -119,7 +120,7 @@ export default function Playing() {
             {state.categories.map((cat, idx) => (
               <div key={idx} className="bg-primary-800 rounded-3xl p-3 px-4 shadow-xl border border-white/10">
                 <label className="text-sm text-teal-300 font-bold mb-1 block">
-                  {idx + 1}. {cat}
+                  {idx + 1}. {translateCategory(cat, language)}
                 </label>
                 <input
                   type="text"
