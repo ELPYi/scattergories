@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { useGame } from '../context/GameContext';
+import { useI18n } from '../context/I18nContext';
 
 export default function Validation() {
   const { state, submitVotes } = useGame();
+  const { t } = useI18n();
   const [votes, setVotes] = useState<{ [catIndex: number]: { [playerId: string]: boolean } }>({});
   const [submitted, setSubmitted] = useState(false);
 
@@ -12,7 +14,6 @@ export default function Validation() {
   const otherPlayers = allPlayers.filter(([pid]) => pid !== state.playerId);
   const myData = state.answersForVoting[state.playerId!];
 
-  // Compute duplicates per category: normalized answer -> list of player IDs
   const duplicatesPerCat: { [catIdx: number]: Set<string> } = {};
   for (let catIdx = 0; catIdx < state.categories.length; catIdx++) {
     const answerMap = new Map<string, string[]>();
@@ -47,12 +48,10 @@ export default function Validation() {
   };
 
   const getVote = (catIndex: number, playerId: string): boolean => {
-    return votes[catIndex]?.[playerId] ?? true; // Default to accept
+    return votes[catIndex]?.[playerId] ?? true;
   };
 
   const handleSubmit = () => {
-    // Fill in default votes (true) for anything not explicitly set
-    // Blank answers are auto-rejected (false)
     const fullVotes: { [catIndex: number]: { [playerId: string]: boolean } } = {};
     for (let i = 0; i < state.categories.length; i++) {
       fullVotes[i] = {};
@@ -72,10 +71,10 @@ export default function Validation() {
     return (
       <div className="min-h-screen flex items-center justify-center p-4">
         <div className="card text-center animate-fade-in">
-          <p className="font-display text-2xl text-teal-300 mb-2">Votes Submitted!</p>
-          <p className="text-primary-200">Waiting for other players...</p>
+          <p className="font-display text-2xl text-teal-300 mb-2">{t('validation.votesSubmitted')}</p>
+          <p className="text-primary-200">{t('validation.waitingForOthers')}</p>
           <p className="text-primary-300 text-sm mt-2">
-            {state.votedCount}/{connectedCount} voted
+            {t('validation.votedCount', { voted: state.votedCount, total: connectedCount })}
           </p>
         </div>
       </div>
@@ -86,10 +85,8 @@ export default function Validation() {
     <div className="min-h-screen p-4 pb-24">
       <div className="max-w-2xl mx-auto">
         <div className="text-center mb-6">
-          <h1 className="font-display text-2xl text-accent-400 mb-1">Vote on Answers</h1>
-          <p className="text-primary-200 text-sm">
-            Tap to reject answers that don't fit. Green = accept, Red = reject.
-          </p>
+          <h1 className="font-display text-2xl text-accent-400 mb-1">{t('validation.voteOnAnswers')}</h1>
+          <p className="text-primary-200 text-sm">{t('validation.instructions')}</p>
         </div>
 
         {state.categories.map((cat, catIdx) => {
@@ -103,7 +100,6 @@ export default function Validation() {
                 {catIdx + 1}. {cat}
               </h3>
               <div className="space-y-1">
-                {/* Own answer — read-only */}
                 {myData && (
                   <div
                     className={`w-full flex items-center justify-between rounded-xl px-3 py-2 text-sm ${
@@ -114,7 +110,7 @@ export default function Validation() {
                           : 'bg-primary-600/20 border border-primary-400/30'
                     }`}
                   >
-                    <span className="text-primary-300 text-xs">You</span>
+                    <span className="text-primary-300 text-xs">{t('validation.you')}</span>
                     <span className={`font-semibold ${
                       myIsBlank
                         ? 'text-primary-400 italic'
@@ -122,13 +118,12 @@ export default function Validation() {
                           ? 'text-accent-400'
                           : 'text-primary-200'
                     }`}>
-                      {myIsBlank ? 'No answer' : myIsDup ? `${myAnswer} (duplicate)` : myAnswer}
+                      {myIsBlank ? t('validation.noAnswer') : myIsDup ? `${myAnswer} ${t('validation.duplicateSuffix')}` : myAnswer}
                     </span>
-                    <span className="text-primary-400 text-xs">—</span>
+                    <span className="text-primary-400 text-xs">-</span>
                   </div>
                 )}
 
-                {/* Other players — votable */}
                 {otherPlayers.map(([pid, data]) => {
                   const answer = (data.answers[catIdx] || '').trim();
                   const isBlank = !answer;
@@ -157,9 +152,9 @@ export default function Validation() {
                             ? 'text-accent-400'
                             : accepted ? 'text-teal-300' : 'text-red-300 line-through'
                       }`}>
-                        {isBlank ? 'No answer' : isDup ? `${answer} (duplicate)` : answer}
+                        {isBlank ? t('validation.noAnswer') : isDup ? `${answer} ${t('validation.duplicateSuffix')}` : answer}
                       </span>
-                      <span>{isBlank ? '—' : isDup ? '—' : accepted ? '✓' : '✗'}</span>
+                      <span>{isBlank ? '-' : isDup ? '-' : accepted ? 'OK' : 'X'}</span>
                     </button>
                   );
                 })}
@@ -169,7 +164,7 @@ export default function Validation() {
         })}
 
         <button onClick={handleSubmit} className="btn-accent w-full text-lg py-4 mt-4">
-          Submit Votes
+          {t('validation.submitVotes')}
         </button>
       </div>
     </div>

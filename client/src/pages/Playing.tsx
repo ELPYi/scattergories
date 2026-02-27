@@ -1,11 +1,13 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { useGame } from '../context/GameContext';
+import { useI18n } from '../context/I18nContext';
 import { useTimer } from '../hooks/useTimer';
 import { socket } from '../socket';
 import { audio } from '../lib/audio';
 
 export default function Playing() {
   const { state, submitAnswers } = useGame();
+  const { t } = useI18n();
   const secondsLeft = useTimer(state.timerEndsAt);
   const [answers, setAnswers] = useState<{ [key: number]: string }>({});
   const [submitted, setSubmitted] = useState(false);
@@ -77,10 +79,10 @@ export default function Playing() {
               </div>
               <div>
                 <p className="text-xs text-primary-300">
-                  Round {state.currentRound}/{state.totalRounds}
+                  {t('playing.roundShort', { round: state.currentRound, total: state.totalRounds })}
                 </p>
                 <p className="text-xs text-primary-300">
-                  {state.submittedCount}/{connectedCount} submitted
+                  {t('playing.submittedCount', { submitted: state.submittedCount, total: connectedCount })}
                 </p>
               </div>
             </div>
@@ -97,7 +99,7 @@ export default function Playing() {
           {showWarning && !submitted && (
             <div className="mt-2 bg-red-500/30 border border-red-400/50 rounded-xl py-2 px-4 text-center animate-bounce-in">
               <p className="font-bold text-red-300 text-sm">
-                10 seconds left! Answers will auto-submit when time's up!
+                {t('playing.tenSecondsWarning')}
               </p>
             </div>
           )}
@@ -106,10 +108,10 @@ export default function Playing() {
         {/* Categories */}
         {submitted ? (
           <div className="card text-center animate-fade-in mt-2">
-            <p className="font-display text-2xl text-teal-300 mb-2">Answers Submitted!</p>
-            <p className="text-primary-200">Waiting for other players...</p>
+            <p className="font-display text-2xl text-teal-300 mb-2">{t('playing.answersSubmitted')}</p>
+            <p className="text-primary-200">{t('playing.waitingForOthers')}</p>
             <p className="text-primary-300 text-sm mt-2">
-              {state.submittedCount}/{connectedCount} done
+              {t('playing.doneCount', { submitted: state.submittedCount, total: connectedCount })}
             </p>
           </div>
         ) : (
@@ -122,7 +124,7 @@ export default function Playing() {
                 <input
                   type="text"
                   className="input-field py-2"
-                  placeholder={`${state.currentLetter}...`}
+                  placeholder={t('playing.placeholderLetter', { letter: state.currentLetter })}
                   value={answers[idx] || ''}
                   onChange={(e) => handleChange(idx, e.target.value)}
                   autoComplete="off"
@@ -131,7 +133,7 @@ export default function Playing() {
             ))}
 
             <button onClick={handleSubmit} className="btn-accent w-full text-lg py-4 mt-4">
-              Submit Answers
+              {t('playing.submitAnswers')}
             </button>
           </div>
         )}

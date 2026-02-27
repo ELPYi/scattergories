@@ -1,8 +1,10 @@
 import React from 'react';
 import { useGame } from '../context/GameContext';
+import { useI18n } from '../context/I18nContext';
 
 export default function RoundResults() {
   const { state, isHost, nextRound } = useGame();
+  const { t } = useI18n();
 
   const sortedPlayers = [...state.playerScores].sort((a, b) => b.totalScore - a.totalScore);
 
@@ -10,15 +12,15 @@ export default function RoundResults() {
     <div className="min-h-screen p-4 pb-24">
       <div className="max-w-lg mx-auto animate-fade-in">
         <div className="text-center mb-6">
-          <h1 className="font-display text-2xl text-accent-400 mb-1">Round {state.currentRound} Results</h1>
+          <h1 className="font-display text-2xl text-accent-400 mb-1">{t('results.roundResultsTitle', { round: state.currentRound })}</h1>
           <p className="text-primary-200 text-sm">
-            Round {state.currentRound} of {state.totalRounds}
+            {t('results.roundOf', { round: state.currentRound, total: state.totalRounds })}
           </p>
         </div>
 
         {/* Scoreboard */}
         <div className="card mb-4">
-          <h3 className="font-bold text-teal-300 mb-3">Scores</h3>
+          <h3 className="font-bold text-teal-300 mb-3">{t('results.scores')}</h3>
           <div className="space-y-2">
             {sortedPlayers.map((p, rank) => (
               <div
@@ -35,7 +37,7 @@ export default function RoundResults() {
                 </div>
                 <div className="text-right">
                   <span className="text-teal-300 font-bold">+{p.roundScore}</span>
-                  <span className="text-primary-300 text-sm ml-2">({p.totalScore} total)</span>
+                  <span className="text-primary-300 text-sm ml-2">{t('results.totalSuffix', { total: p.totalScore })}</span>
                 </div>
               </div>
             ))}
@@ -45,7 +47,7 @@ export default function RoundResults() {
         {/* Answer breakdown */}
         {state.roundResults && (
           <div className="card mb-4">
-            <h3 className="font-bold text-teal-300 mb-3">Answer Breakdown</h3>
+            <h3 className="font-bold text-teal-300 mb-3">{t('results.answerBreakdown')}</h3>
             {state.categories.map((cat, catIdx) => {
               const results = state.roundResults![catIdx] || [];
               return (
@@ -77,7 +79,7 @@ export default function RoundResults() {
                           </span>
                           <span className="w-12 text-right font-bold">
                             {r.duplicate ? (
-                              <span className="text-accent-400 text-xs">DUP</span>
+                              <span className="text-accent-400 text-xs">{t('results.duplicateShort')}</span>
                             ) : (
                               <span className={r.points > 0 ? 'text-teal-300' : 'text-red-300'}>
                                 {r.points}
@@ -96,12 +98,12 @@ export default function RoundResults() {
 
         {isHost && (
           <button onClick={nextRound} className="btn-accent w-full text-lg py-4">
-            Next Round
+            {t('results.nextRound')}
           </button>
         )}
         {!isHost && (
           <p className="text-center text-primary-300 text-sm italic">
-            Waiting for host to continue...
+            {t('results.waitingForHost')}
           </p>
         )}
       </div>

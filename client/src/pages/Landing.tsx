@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { useGame } from '../context/GameContext';
+import { useI18n } from '../context/I18nContext';
 
 export default function Landing() {
   const { createRoom, joinRoom, state } = useGame();
+  const { language, setLanguage, t, tError } = useI18n();
   const [mode, setMode] = useState<'home' | 'create' | 'join'>('home');
   const [nickname, setNickname] = useState('');
   const [roomCode, setRoomCode] = useState('');
@@ -21,11 +23,24 @@ export default function Landing() {
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
       <div className="w-full max-w-md animate-fade-in">
+        <div className="flex justify-end mb-3">
+          <label className="text-sm text-primary-200 flex items-center gap-2">
+            {t('lang.label')}
+            <select
+              className="bg-primary-800 border border-white/20 rounded-lg px-2 py-1 text-sm"
+              value={language}
+              onChange={(e) => setLanguage(e.target.value as 'en' | 'ms')}
+            >
+              <option value="en">{t('lang.en')}</option>
+              <option value="ms">{t('lang.ms')}</option>
+            </select>
+          </label>
+        </div>
         <div className="text-center mb-8">
           <h1 className="font-display text-5xl md:text-6xl text-accent-400 mb-2 drop-shadow-lg">
             Scattergories
           </h1>
-          <p className="text-primary-200 text-lg font-semibold">Online Party Game</p>
+          <p className="text-primary-200 text-lg font-semibold">{t('landing.subtitle')}</p>
         </div>
 
         {mode === 'home' && (
@@ -34,7 +49,7 @@ export default function Landing() {
               <input
                 type="text"
                 className="input-field text-center"
-                placeholder="Enter your nickname"
+                placeholder={t('landing.nicknamePlaceholder')}
                 value={nickname}
                 onChange={(e) => setNickname(e.target.value)}
                 maxLength={20}
@@ -46,26 +61,29 @@ export default function Landing() {
               className="btn-primary w-full text-xl py-4"
               disabled={!hasNickname}
             >
-              Create Room
+              {t('landing.createRoom')}
             </button>
             <button
               onClick={() => hasNickname && setMode('join')}
               className="btn-secondary w-full text-xl py-4"
               disabled={!hasNickname}
             >
-              Join Room
+              {t('landing.joinRoom')}
             </button>
           </div>
         )}
 
         {mode === 'join' && (
           <form onSubmit={handleJoin} className="card space-y-4 animate-slide-up">
-            <h2 className="font-display text-2xl text-center">Join Room</h2>
-            <p className="text-primary-200 text-sm text-center">Playing as <span className="font-bold text-teal-300">{nickname}</span></p>
+            <h2 className="font-display text-2xl text-center">{t('landing.joinRoomTitle')}</h2>
+            <p className="text-primary-200 text-sm text-center">
+              {t('landing.playingAsLabel')}{' '}
+              <span className="font-bold text-teal-300">{nickname}</span>
+            </p>
             <input
               type="text"
               className="input-field uppercase tracking-widest text-center text-2xl"
-              placeholder="ROOM CODE"
+              placeholder={t('landing.roomCodePlaceholder')}
               value={roomCode}
               onChange={(e) => setRoomCode(e.target.value.toUpperCase().slice(0, 4))}
               maxLength={4}
@@ -76,21 +94,21 @@ export default function Landing() {
               className="btn-accent w-full"
               disabled={roomCode.length < 4}
             >
-              Join Game
+              {t('landing.joinGame')}
             </button>
             <button
               type="button"
               onClick={() => setMode('home')}
               className="text-primary-300 text-sm w-full text-center hover:text-white transition-colors"
             >
-              Back
+              {t('landing.back')}
             </button>
           </form>
         )}
 
         {state.error && (
           <div className="mt-4 bg-red-500/20 border border-red-500/40 rounded-2xl p-3 text-center text-red-200 animate-slide-up">
-            {state.error}
+            {tError(state.error)}
           </div>
         )}
       </div>

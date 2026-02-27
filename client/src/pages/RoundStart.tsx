@@ -1,11 +1,13 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useGame } from '../context/GameContext';
+import { useI18n } from '../context/I18nContext';
 import { audio } from '../lib/audio';
 
 const LETTERS = 'ABCDEFGHIJKLMNOPRSTW'.split('');
 
 export default function RoundStart() {
   const { state } = useGame();
+  const { t } = useI18n();
   const [displayLetter, setDisplayLetter] = useState('?');
   const [landed, setLanded] = useState(false);
   const timeoutIds = useRef<number[]>([]);
@@ -50,10 +52,10 @@ export default function RoundStart() {
     <div className="min-h-screen flex items-center justify-center p-4">
       <div className="text-center">
         <p className="text-primary-200 font-bold text-lg mb-2 animate-fade-in">
-          Round {state.currentRound} of {state.totalRounds}
+          {t('roundStart.roundOf', { round: state.currentRound, total: state.totalRounds })}
         </p>
         <p className="text-primary-300 text-xl mb-6 animate-fade-in">
-          {landed ? 'Your letter is...' : 'Rolling...'}
+          {landed ? t('roundStart.yourLetterIs') : t('roundStart.rolling')}
         </p>
 
         <div
@@ -74,7 +76,7 @@ export default function RoundStart() {
         </div>
 
         <p className={`text-primary-200 transition-opacity duration-300 ${landed ? 'animate-pulse-slow' : 'opacity-0'}`}>
-          Get ready...
+          {t('roundStart.getReady')}
         </p>
       </div>
     </div>

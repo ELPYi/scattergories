@@ -1,10 +1,12 @@
 import React, { useEffect } from 'react';
 import confetti from 'canvas-confetti';
 import { useGame } from '../context/GameContext';
+import { useI18n } from '../context/I18nContext';
 import { audio } from '../lib/audio';
 
 export default function FinalResults() {
   const { state, isHost, playAgain } = useGame();
+  const { t } = useI18n();
 
   const sortedPlayers = [...state.playerScores].sort((a, b) => b.totalScore - a.totalScore);
   const winner = sortedPlayers[0];
@@ -44,18 +46,18 @@ export default function FinalResults() {
       <div className="w-full max-w-lg animate-fade-in">
         <div className="text-center mb-6">
           <h1 className="font-display text-4xl text-accent-400 mb-2 animate-bounce-in">
-            Game Over!
+            {t('final.gameOver')}
           </h1>
           {winner && (
             <p className="text-xl text-primary-200">
-              <span className="font-display text-accent-400">{winner.nickname}</span> wins!
+              {t('final.wins', { name: winner.nickname })}
             </p>
           )}
         </div>
 
         {/* Final Leaderboard */}
         <div className="card mb-6">
-          <h3 className="font-bold text-teal-300 mb-4 text-center">Final Standings</h3>
+          <h3 className="font-bold text-teal-300 mb-4 text-center">{t('final.finalStandings')}</h3>
           <div className="space-y-3">
             {sortedPlayers.map((p, rank) => (
               <div
@@ -86,7 +88,7 @@ export default function FinalResults() {
         {state.roundResults && (
           <details className="card mb-6">
             <summary className="font-bold text-teal-300 cursor-pointer">
-              Last Round Breakdown
+              {t('final.lastRoundBreakdown')}
             </summary>
             <div className="mt-3">
               {state.categories.map((cat, catIdx) => {
@@ -120,7 +122,7 @@ export default function FinalResults() {
                             </span>
                             <span className="w-8 text-right font-bold text-sm">
                               {r.duplicate ? (
-                                <span className="text-accent-400 text-xs">DUP</span>
+                                <span className="text-accent-400 text-xs">{t('results.duplicateShort')}</span>
                               ) : (
                                 <span className={r.points > 0 ? 'text-teal-300' : 'text-red-300'}>
                                   {r.points}
@@ -141,12 +143,12 @@ export default function FinalResults() {
         <div className="space-y-3">
           {isHost && (
             <button onClick={playAgain} className="btn-accent w-full text-lg py-4">
-              Play Again
+              {t('final.playAgain')}
             </button>
           )}
           {!isHost && (
             <p className="text-center text-primary-300 text-sm italic">
-              Waiting for host...
+              {t('final.waitingForHost')}
             </p>
           )}
         </div>

@@ -1,0 +1,11 @@
+.git
+.gitignore
+node_modules
+client/node_modules
+server/node_modules
+*.log
+.env
+dist
+client/dist
+server/dist
+screenshots
