@@ -3,11 +3,10 @@
 A real-time multiplayer Scattergories party game built with React, Node.js, and Socket.IO.
 
 <p align="center">
-  <img src="screenshots/landing-desktop.png" alt="Landing Page - Desktop" width="700" />
-</p>
-
-<p align="center">
-  <img src="screenshots/landing-mobile.png" alt="Landing Page - Mobile" width="250" />
+  <img src="screenshots/landing-mobile.png" alt="Landing Page" width="250" />
+  <img src="screenshots/lobby-mobile.png" alt="Game Lobby" width="250" />
+  <img src="screenshots/playing-mobile.png" alt="Playing" width="250" />
+  <img src="screenshots/round-results-mobile.png" alt="Round Results" width="250" />
 </p>
 
 ## Features
