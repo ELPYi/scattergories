@@ -35,6 +35,9 @@ export default function Validation() {
   const isDuplicate = (catIdx: number, pid: string): boolean =>
     duplicatesPerCat[catIdx]?.has(pid) ?? false;
 
+  const isWrongLetter = (answer: string): boolean =>
+    answer.length > 0 && !answer.toLowerCase().startsWith(state.currentLetter.toLowerCase());
+
   const toggleVote = (catIndex: number, playerId: string) => {
     setVotes((prev) => {
       const catVotes = prev[catIndex] || {};
@@ -59,7 +62,8 @@ export default function Validation() {
       for (const [pid, data] of otherPlayers) {
         const answer = (data.answers[i] || '').trim();
         const isDup = isDuplicate(i, pid);
-        fullVotes[i][pid] = (answer && !isDup) ? getVote(i, pid) : false;
+        const wrongLetter = isWrongLetter(answer);
+        fullVotes[i][pid] = (answer && !isDup && !wrongLetter) ? getVote(i, pid) : false;
       }
     }
     submitVotes(fullVotes);
@@ -94,6 +98,7 @@ export default function Validation() {
           const myAnswer = myData ? (myData.answers[catIdx] || '').trim() : '';
           const myIsBlank = !myAnswer;
           const myIsDup = myData ? isDuplicate(catIdx, state.playerId!) : false;
+          const myWrongLetter = isWrongLetter(myAnswer);
 
           return (
             <div key={catIdx} className="card mb-3">
@@ -106,20 +111,24 @@ export default function Validation() {
                     className={`w-full flex items-center justify-between rounded-xl px-3 py-2 text-sm ${
                       myIsBlank
                         ? 'bg-primary-700/40 border border-primary-600/30 opacity-50'
-                        : myIsDup
-                          ? 'bg-accent-400/15 border border-accent-400/40'
-                          : 'bg-primary-600/20 border border-primary-400/30'
+                        : myWrongLetter
+                          ? 'bg-red-500/20 border border-red-500/40'
+                          : myIsDup
+                            ? 'bg-accent-400/15 border border-accent-400/40'
+                            : 'bg-primary-600/20 border border-primary-400/30'
                     }`}
                   >
                     <span className="text-primary-300 text-xs">{t('validation.you')}</span>
                     <span className={`font-semibold ${
                       myIsBlank
                         ? 'text-primary-400 italic'
-                        : myIsDup
-                          ? 'text-accent-400'
-                          : 'text-primary-200'
+                        : myWrongLetter
+                          ? 'text-red-300'
+                          : myIsDup
+                            ? 'text-accent-400'
+                            : 'text-primary-200'
                     }`}>
-                      {myIsBlank ? t('validation.noAnswer') : myIsDup ? `${myAnswer} ${t('validation.duplicateSuffix')}` : myAnswer}
+                      {myIsBlank ? t('validation.noAnswer') : myWrongLetter ? `${myAnswer} ${t('validation.wrongLetterSuffix')}` : myIsDup ? `${myAnswer} ${t('validation.duplicateSuffix')}` : myAnswer}
                     </span>
                     <span className="text-primary-400 text-xs">-</span>
                   </div>
@@ -129,33 +138,39 @@ export default function Validation() {
                   const answer = (data.answers[catIdx] || '').trim();
                   const isBlank = !answer;
                   const isDup = isDuplicate(catIdx, pid);
-                  const accepted = (isBlank || isDup) ? false : getVote(catIdx, pid);
+                  const wrongLetter = isWrongLetter(answer);
+                  const disabled = isBlank || isDup || wrongLetter;
+                  const accepted = disabled ? false : getVote(catIdx, pid);
                   return (
                     <button
                       key={pid}
-                      onClick={() => !isBlank && !isDup && toggleVote(catIdx, pid)}
-                      disabled={isBlank || isDup}
+                      onClick={() => !disabled && toggleVote(catIdx, pid)}
+                      disabled={disabled}
                       className={`w-full flex items-center justify-between rounded-xl px-3 py-2 text-sm transition-all ${
                         isBlank
                           ? 'bg-primary-700/40 border border-primary-600/30 opacity-50 cursor-not-allowed'
-                          : isDup
-                            ? 'bg-accent-400/15 border border-accent-400/40 cursor-not-allowed'
-                            : accepted
-                              ? 'bg-teal-500/20 border border-teal-500/40'
-                              : 'bg-red-500/20 border border-red-500/40'
+                          : wrongLetter
+                            ? 'bg-red-500/20 border border-red-500/40 cursor-not-allowed'
+                            : isDup
+                              ? 'bg-accent-400/15 border border-accent-400/40 cursor-not-allowed'
+                              : accepted
+                                ? 'bg-teal-500/20 border border-teal-500/40'
+                                : 'bg-red-500/20 border border-red-500/40'
                       }`}
                     >
                       <span className="text-primary-200 text-xs">{data.nickname}</span>
                       <span className={`font-semibold ${
                         isBlank
                           ? 'text-primary-400 italic'
-                          : isDup
-                            ? 'text-accent-400'
-                            : accepted ? 'text-teal-300' : 'text-red-300 line-through'
+                          : wrongLetter
+                            ? 'text-red-300'
+                            : isDup
+                              ? 'text-accent-400'
+                              : accepted ? 'text-teal-300' : 'text-red-300 line-through'
                       }`}>
-                        {isBlank ? t('validation.noAnswer') : isDup ? `${answer} ${t('validation.duplicateSuffix')}` : answer}
+                        {isBlank ? t('validation.noAnswer') : wrongLetter ? `${answer} ${t('validation.wrongLetterSuffix')}` : isDup ? `${answer} ${t('validation.duplicateSuffix')}` : answer}
                       </span>
-                      <span>{isBlank ? '-' : isDup ? '-' : accepted ? 'OK' : 'X'}</span>
+                      <span>{isBlank ? '-' : wrongLetter ? '-' : isDup ? '-' : accepted ? 'OK' : 'X'}</span>
                     </button>
                   );
                 })}

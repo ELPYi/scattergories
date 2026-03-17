@@ -23,9 +23,15 @@ export function validateAnswers(
         continue;
       }
 
+      // Hard rule: answer must start with the round letter regardless of mode
+      if (!normalized.startsWith(lowerLetter)) {
+        results[playerId][i] = false;
+        continue;
+      }
+
       switch (mode) {
         case 'auto':
-          results[playerId][i] = normalized.startsWith(lowerLetter);
+          results[playerId][i] = true;
           break;
 
         case 'vote':

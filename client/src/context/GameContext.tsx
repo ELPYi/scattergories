@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useReducer, useCallback, useEffect } from 'react';
+import React, { createContext, useContext, useReducer, useCallback, useEffect, useRef } from 'react';
 import { socket } from '../socket';
 import {
   GamePhase,
@@ -34,8 +34,10 @@ interface GameState {
 type Action =
   | { type: 'SET_PHASE'; phase: GamePhase }
   | { type: 'JOINED_ROOM'; playerId: string; roomCode: string; players: Player[]; settings: RoomSettings }
+  | { type: 'REJOINED_ROOM'; playerId: string; roomCode: string; players: Player[]; settings: RoomSettings; phase: GamePhase; currentRound: number; totalRounds: number; currentLetter: string; categories: string[]; timerEndsAt: number | null; answersForVoting: any | null; roundResults: any | null; playerScores: PlayerScore[] | null }
   | { type: 'PLAYER_JOINED'; player: Player }
   | { type: 'PLAYER_LEFT'; players: Player[] }
+  | { type: 'PLAYERS_UPDATED'; players: Player[] }
   | { type: 'SETTINGS_UPDATED'; settings: RoomSettings }
   | { type: 'ROUND_START'; round: number; totalRounds: number; letter: string; categories: string[] }
   | { type: 'PLAYING'; timerEndsAt: number }
@@ -85,7 +87,27 @@ function reducer(state: GameState, action: Action): GameState {
       };
     case 'PLAYER_JOINED':
       return { ...state, players: [...state.players, action.player] };
+    case 'REJOINED_ROOM':
+      return {
+        ...state,
+        phase: action.phase,
+        playerId: action.playerId,
+        roomCode: action.roomCode,
+        players: action.players,
+        settings: action.settings,
+        currentRound: action.currentRound,
+        totalRounds: action.totalRounds,
+        currentLetter: action.currentLetter,
+        categories: action.categories,
+        timerEndsAt: action.timerEndsAt,
+        answersForVoting: action.answersForVoting ?? state.answersForVoting,
+        roundResults: action.roundResults ?? state.roundResults,
+        playerScores: action.playerScores ?? state.playerScores,
+        error: null,
+      };
     case 'PLAYER_LEFT':
+      return { ...state, players: action.players };
+    case 'PLAYERS_UPDATED':
       return { ...state, players: action.players };
     case 'SETTINGS_UPDATED':
       return { ...state, settings: action.settings };
@@ -173,13 +195,86 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
 
   const isHost = state.players.find((p) => p.id === state.playerId)?.isHost ?? false;
 
-  // Connect socket on mount
+  // Keep a ref to current state so reconnect handler is never stale
+  const stateRef = useRef(state);
+  useEffect(() => {
+    stateRef.current = state;
+  }, [state]);
+
+  // Warn before refresh/close when the player is in a room
+  useEffect(() => {
+    if (state.phase === 'LANDING') return;
+
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [state.phase]);
+
+  // Connect socket on mount + handle reconnection
   useEffect(() => {
     if (!socket.connected) {
       socket.connect();
     }
 
+    const handleConnect = () => {
+      const s = stateRef.current;
+
+      // Determine session to rejoin: prefer live React state, fall back to sessionStorage
+      let roomCode = s.roomCode;
+      let nickname: string | null = null;
+
+      if (roomCode) {
+        nickname = s.players.find((p) => p.id === s.playerId)?.nickname ?? null;
+      } else {
+        const saved = sessionStorage.getItem('scattergories_session');
+        if (saved) {
+          try {
+            const parsed = JSON.parse(saved);
+            roomCode = parsed.roomCode ?? null;
+            nickname = parsed.nickname ?? null;
+          } catch {
+            sessionStorage.removeItem('scattergories_session');
+          }
+        }
+      }
+
+      if (roomCode && nickname) {
+        socket.emit('room:rejoin', { code: roomCode, nickname }, (res: any) => {
+          if (res.ok) {
+            dispatch({
+              type: 'REJOINED_ROOM',
+              playerId: res.playerId,
+              roomCode: res.room.code,
+              players: res.room.players,
+              settings: res.room.settings,
+              phase: res.room.phase,
+              currentRound: res.room.currentRound,
+              totalRounds: res.room.totalRounds,
+              currentLetter: res.room.currentLetter,
+              categories: res.room.categories,
+              timerEndsAt: res.room.timerEndsAt,
+              answersForVoting: res.room.answersForVoting ?? null,
+              roundResults: res.room.roundResults ?? null,
+              playerScores: res.room.playerScores ?? null,
+            });
+          } else {
+            // Room expired or player not found — clear stale session
+            sessionStorage.removeItem('scattergories_session');
+            if (stateRef.current.roomCode) {
+              dispatch({ type: 'RESET' });
+            }
+          }
+        });
+      }
+    };
+
+    socket.on('connect', handleConnect);
+
     return () => {
+      socket.off('connect', handleConnect);
       socket.off();
     };
   }, []);
@@ -192,6 +287,16 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
 
     socket.on('room:player-left', (data) => {
       dispatch({ type: 'PLAYER_LEFT', players: data.players });
+    });
+
+    // Temporary disconnect — player still in room but marked offline
+    socket.on('room:player-disconnected', (data) => {
+      dispatch({ type: 'PLAYERS_UPDATED', players: data.players });
+    });
+
+    // Player came back within grace period
+    socket.on('room:player-rejoined', (data) => {
+      dispatch({ type: 'PLAYERS_UPDATED', players: data.players });
     });
 
     socket.on('room:settings-updated', (data) => {
@@ -258,6 +363,8 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
     return () => {
       socket.off('room:player-joined');
       socket.off('room:player-left');
+      socket.off('room:player-disconnected');
+      socket.off('room:player-rejoined');
       socket.off('room:settings-updated');
       socket.off('game:round-start');
       socket.off('game:playing');
@@ -274,6 +381,10 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
   const createRoom = useCallback((nickname: string) => {
     socket.emit('room:create', { nickname }, (res: any) => {
       if (res.ok) {
+        sessionStorage.setItem(
+          'scattergories_session',
+          JSON.stringify({ roomCode: res.room.code, nickname })
+        );
         dispatch({
           type: 'JOINED_ROOM',
           playerId: res.playerId,
@@ -290,6 +401,10 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
   const joinRoom = useCallback((code: string, nickname: string) => {
     socket.emit('room:join', { code: code.toUpperCase(), nickname }, (res: any) => {
       if (res.ok) {
+        sessionStorage.setItem(
+          'scattergories_session',
+          JSON.stringify({ roomCode: res.room.code, nickname })
+        );
         dispatch({
           type: 'JOINED_ROOM',
           playerId: res.playerId,
@@ -335,6 +450,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const leaveRoom = useCallback(() => {
+    sessionStorage.removeItem('scattergories_session');
     socket.emit('room:leave');
     dispatch({ type: 'RESET' });
   }, []);

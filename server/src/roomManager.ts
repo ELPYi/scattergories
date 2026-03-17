@@ -3,6 +3,10 @@ import { generateRoomCode, sanitizeNickname } from './utils';
 
 const rooms = new Map<string, Room>();
 
+// Grace-period timers: old socketId → timeout handle
+const disconnectTimers = new Map<string, NodeJS.Timeout>();
+const RECONNECT_GRACE_MS = 30_000; // 30 seconds
+
 export function createRoom(socketId: string, nickname: string): Room {
   let code: string;
   do {
@@ -82,6 +86,13 @@ export function removePlayer(room: Room, socketId: string): boolean {
   const idx = room.players.findIndex((p) => p.socketId === socketId);
   if (idx === -1) return false;
 
+  // Cancel any pending grace-period timer
+  const timer = disconnectTimers.get(socketId);
+  if (timer) {
+    clearTimeout(timer);
+    disconnectTimers.delete(socketId);
+  }
+
   const wasHost = room.players[idx].isHost;
   room.players.splice(idx, 1);
 
@@ -99,6 +110,54 @@ export function removePlayer(room: Room, socketId: string): boolean {
   }
 
   return true;
+}
+
+/**
+ * Marks a player as disconnected and starts a grace-period timer.
+ * `onExpired` is called if the player does not reconnect in time, after they
+ * have been permanently removed. Returns false if the player was not found.
+ */
+export function markPlayerDisconnected(
+  room: Room,
+  socketId: string,
+  onExpired: (removedPlayerId: string) => void
+): boolean {
+  const player = room.players.find((p) => p.socketId === socketId);
+  if (!player) return false;
+
+  player.connected = false;
+
+  const timer = setTimeout(() => {
+    disconnectTimers.delete(socketId);
+    const removedId = player.id;
+    removePlayer(room, socketId);
+    onExpired(removedId);
+  }, RECONNECT_GRACE_MS);
+
+  disconnectTimers.set(socketId, timer);
+  return true;
+}
+
+/**
+ * Finds a disconnected player in a room by nickname and reassigns their socket.
+ * Returns the player if found, null otherwise.
+ */
+export function reconnectPlayer(room: Room, nickname: string, newSocketId: string): Player | null {
+  const player = room.players.find(
+    (p) => p.nickname.toLowerCase() === nickname.toLowerCase() && !p.connected
+  );
+  if (!player) return null;
+
+  // Cancel pending removal timer
+  const timer = disconnectTimers.get(player.socketId);
+  if (timer) {
+    clearTimeout(timer);
+    disconnectTimers.delete(player.socketId);
+  }
+
+  player.socketId = newSocketId;
+  player.connected = true;
+  return player;
 }
 
 export function updateSettings(room: Room, settings: Partial<RoomSettings>): void {

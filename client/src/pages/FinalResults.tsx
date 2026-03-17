@@ -10,7 +10,18 @@ export default function FinalResults() {
   const { t, language } = useI18n();
 
   const sortedPlayers = [...state.playerScores].sort((a, b) => b.totalScore - a.totalScore);
-  const winner = sortedPlayers[0];
+
+  // Assign ranks accounting for ties (standard competition ranking: 1,1,3 not 1,1,2)
+  const ranks: number[] = [];
+  sortedPlayers.forEach((p, i) => {
+    if (i === 0) {
+      ranks.push(1);
+    } else {
+      ranks.push(sortedPlayers[i - 1].totalScore === p.totalScore ? ranks[i - 1] : i + 1);
+    }
+  });
+
+  const winners = sortedPlayers.filter((p) => p.totalScore === sortedPlayers[0]?.totalScore);
 
   useEffect(() => {
     audio.playVictoryFanfare();
@@ -49,9 +60,11 @@ export default function FinalResults() {
           <h1 className="font-display text-4xl text-accent-400 mb-2 animate-bounce-in">
             {t('final.gameOver')}
           </h1>
-          {winner && (
+          {winners.length > 0 && (
             <p className="text-xl text-primary-200">
-              {t('final.wins', { name: winner.nickname })}
+              {winners.length === 1
+                ? t('final.wins', { name: winners[0].nickname })
+                : t('final.tie', { names: winners.map((w) => w.nickname).join(' & ') })}
             </p>
           )}
         </div>
@@ -60,28 +73,31 @@ export default function FinalResults() {
         <div className="card mb-6">
           <h3 className="font-bold text-teal-300 mb-4 text-center">{t('final.finalStandings')}</h3>
           <div className="space-y-3">
-            {sortedPlayers.map((p, rank) => (
-              <div
-                key={p.id}
-                className={`flex items-center justify-between rounded-2xl px-5 py-4 transition-all ${
-                  rank === 0
-                    ? 'bg-gradient-to-r from-accent-400/30 to-accent-500/20 border-2 border-accent-400/50 scale-105'
-                    : rank === 1
-                      ? 'bg-white/10 border border-white/20'
+            {sortedPlayers.map((p, i) => {
+              const rank = ranks[i];
+              return (
+                <div
+                  key={p.id}
+                  className={`flex items-center justify-between rounded-2xl px-5 py-4 transition-all ${
+                    rank === 1
+                      ? 'bg-gradient-to-r from-accent-400/30 to-accent-500/20 border-2 border-accent-400/50 scale-105'
                       : rank === 2
-                        ? 'bg-white/5 border border-white/10'
-                        : 'bg-white/5'
-                }`}
-              >
-                <div className="flex items-center gap-3">
-                  <span className="font-display text-2xl w-8 text-center">
-                    {rank === 0 ? '🥇' : rank === 1 ? '🥈' : rank === 2 ? '🥉' : `${rank + 1}`}
-                  </span>
-                  <span className="font-bold text-lg">{p.nickname}</span>
+                        ? 'bg-white/10 border border-white/20'
+                        : rank === 3
+                          ? 'bg-white/5 border border-white/10'
+                          : 'bg-white/5'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="font-display text-2xl w-8 text-center">
+                      {rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : `${rank}`}
+                    </span>
+                    <span className="font-bold text-lg">{p.nickname}</span>
+                  </div>
+                  <span className="font-display text-2xl text-accent-400">{p.totalScore}</span>
                 </div>
-                <span className="font-display text-2xl text-accent-400">{p.totalScore}</span>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
 

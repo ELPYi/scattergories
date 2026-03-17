@@ -9,6 +9,15 @@ export default function RoundResults() {
 
   const sortedPlayers = [...state.playerScores].sort((a, b) => b.totalScore - a.totalScore);
 
+  const ranks: number[] = [];
+  sortedPlayers.forEach((p, i) => {
+    if (i === 0) {
+      ranks.push(1);
+    } else {
+      ranks.push(sortedPlayers[i - 1].totalScore === p.totalScore ? ranks[i - 1] : i + 1);
+    }
+  });
+
   return (
     <div className="min-h-screen p-4 pb-24">
       <div className="max-w-lg mx-auto animate-fade-in">
@@ -23,16 +32,18 @@ export default function RoundResults() {
         <div className="card mb-4">
           <h3 className="font-bold text-teal-300 mb-3">{t('results.scores')}</h3>
           <div className="space-y-2">
-            {sortedPlayers.map((p, rank) => (
+            {sortedPlayers.map((p, i) => {
+              const rank = ranks[i];
+              return (
               <div
                 key={p.id}
                 className={`flex items-center justify-between rounded-xl px-4 py-3 ${
-                  rank === 0 ? 'bg-accent-400/20 border border-accent-400/40' : 'bg-white/5'
+                  rank === 1 ? 'bg-accent-400/20 border border-accent-400/40' : 'bg-white/5'
                 }`}
               >
                 <div className="flex items-center gap-3">
                   <span className="font-display text-lg w-6 text-center">
-                    {rank === 0 ? '🥇' : rank === 1 ? '🥈' : rank === 2 ? '🥉' : `${rank + 1}`}
+                    {rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : `${rank}`}
                   </span>
                   <span className="font-semibold">{p.nickname}</span>
                 </div>
@@ -41,7 +52,8 @@ export default function RoundResults() {
                   <span className="text-primary-300 text-sm ml-2">{t('results.totalSuffix', { total: p.totalScore })}</span>
                 </div>
               </div>
-            ))}
+              );
+            })}
           </div>
         </div>
 

@@ -117,21 +117,30 @@ export default function Playing() {
           </div>
         ) : (
           <div className="space-y-3 animate-fade-in mt-2">
-            {state.categories.map((cat, idx) => (
-              <div key={idx} className="bg-primary-800 rounded-3xl p-3 px-4 shadow-xl border border-white/10">
-                <label className="text-sm text-teal-300 font-bold mb-1 block">
-                  {idx + 1}. {translateCategory(cat, language)}
-                </label>
-                <input
-                  type="text"
-                  className="input-field py-2"
-                  placeholder={t('playing.placeholderLetter', { letter: state.currentLetter })}
-                  value={answers[idx] || ''}
-                  onChange={(e) => handleChange(idx, e.target.value)}
-                  autoComplete="off"
-                />
-              </div>
-            ))}
+            {state.categories.map((cat, idx) => {
+              const answer = answers[idx] || '';
+              const wrongLetter = answer.length > 0 && !answer.trimStart().toLowerCase().startsWith(state.currentLetter.toLowerCase());
+              return (
+                <div key={idx} className={`bg-primary-800 rounded-3xl p-3 px-4 shadow-xl border transition-colors ${wrongLetter ? 'border-red-400/70' : 'border-white/10'}`}>
+                  <label className="text-sm text-teal-300 font-bold mb-1 block">
+                    {idx + 1}. {translateCategory(cat, language)}
+                  </label>
+                  <input
+                    type="text"
+                    className={`input-field py-2 ${wrongLetter ? 'border-red-400/70 focus:border-red-400' : ''}`}
+                    placeholder={t('playing.placeholderLetter', { letter: state.currentLetter })}
+                    value={answer}
+                    onChange={(e) => handleChange(idx, e.target.value)}
+                    autoComplete="off"
+                  />
+                  {wrongLetter && (
+                    <p className="text-red-400 text-xs mt-1">
+                      {t('playing.wrongLetter', { letter: state.currentLetter })}
+                    </p>
+                  )}
+                </div>
+              );
+            })}
 
             <button onClick={handleSubmit} className="btn-accent w-full text-lg py-4 mt-4">
               {t('playing.submitAnswers')}

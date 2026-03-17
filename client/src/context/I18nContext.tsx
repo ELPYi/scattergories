@@ -15,6 +15,18 @@ type TranslationKey =
   | 'landing.roomCodePlaceholder'
   | 'landing.joinGame'
   | 'landing.back'
+  | 'landing.howToPlay'
+  | 'landing.howToPlay.title'
+  | 'landing.howToPlay.letterTitle'
+  | 'landing.howToPlay.letterDesc'
+  | 'landing.howToPlay.fillTitle'
+  | 'landing.howToPlay.fillDesc'
+  | 'landing.howToPlay.voteTitle'
+  | 'landing.howToPlay.voteDesc'
+  | 'landing.howToPlay.scoreTitle'
+  | 'landing.howToPlay.scoreDesc'
+  | 'landing.howToPlay.winTitle'
+  | 'landing.howToPlay.winDesc'
   | 'lobby.title'
   | 'lobby.roomCode'
   | 'lobby.players'
@@ -39,6 +51,7 @@ type TranslationKey =
   | 'roundStart.getReady'
   | 'playing.roundShort'
   | 'playing.submittedCount'
+  | 'playing.wrongLetter'
   | 'playing.tenSecondsWarning'
   | 'playing.placeholderLetter'
   | 'playing.submitAnswers'
@@ -53,6 +66,7 @@ type TranslationKey =
   | 'validation.you'
   | 'validation.noAnswer'
   | 'validation.duplicateSuffix'
+  | 'validation.wrongLetterSuffix'
   | 'validation.submitVotes'
   | 'results.roundResultsTitle'
   | 'results.roundOf'
@@ -64,6 +78,7 @@ type TranslationKey =
   | 'results.waitingForHost'
   | 'final.gameOver'
   | 'final.wins'
+  | 'final.tie'
   | 'final.finalStandings'
   | 'final.lastRoundBreakdown'
   | 'final.playAgain'
@@ -95,6 +110,18 @@ const en: Record<TranslationKey, string> = {
   'landing.roomCodePlaceholder': 'ROOM CODE',
   'landing.joinGame': 'Join Game',
   'landing.back': 'Back',
+  'landing.howToPlay': 'How to Play',
+  'landing.howToPlay.title': 'How to Play',
+  'landing.howToPlay.letterTitle': 'Each round, a letter is revealed',
+  'landing.howToPlay.letterDesc': 'All your answers must start with that letter.',
+  'landing.howToPlay.fillTitle': 'Fill in the categories',
+  'landing.howToPlay.fillDesc': "Think fast — there's a timer! Write one answer per category.",
+  'landing.howToPlay.voteTitle': 'Vote on answers',
+  'landing.howToPlay.voteDesc': "After time's up, vote on whether each player's answers are valid. Majority rules.",
+  'landing.howToPlay.scoreTitle': 'Score points',
+  'landing.howToPlay.scoreDesc': 'Valid unique answers = 1 pt. Duplicate answers = 0 pts. Wrong letter = 0 pts.',
+  'landing.howToPlay.winTitle': 'Most points wins!',
+  'landing.howToPlay.winDesc': 'Play multiple rounds — highest total score at the end wins.',
   'lobby.title': 'Game Lobby',
   'lobby.roomCode': 'Room Code',
   'lobby.players': 'Players ({count})',
@@ -119,6 +146,7 @@ const en: Record<TranslationKey, string> = {
   'roundStart.getReady': 'Get ready...',
   'playing.roundShort': 'Round {round}/{total}',
   'playing.submittedCount': '{submitted}/{total} submitted',
+  'playing.wrongLetter': 'Must start with "{letter}"',
   'playing.tenSecondsWarning': "10 seconds left! Answers will auto-submit when time's up!",
   'playing.placeholderLetter': '{letter}...',
   'playing.submitAnswers': 'Submit Answers',
@@ -133,6 +161,7 @@ const en: Record<TranslationKey, string> = {
   'validation.you': 'You',
   'validation.noAnswer': 'No answer',
   'validation.duplicateSuffix': '(duplicate)',
+  'validation.wrongLetterSuffix': '(wrong letter)',
   'validation.submitVotes': 'Submit Votes',
   'results.roundResultsTitle': 'Round {round} Results',
   'results.roundOf': 'Round {round} of {total}',
@@ -144,6 +173,7 @@ const en: Record<TranslationKey, string> = {
   'results.waitingForHost': 'Waiting for host to continue...',
   'final.gameOver': 'Game Over!',
   'final.wins': '{name} wins!',
+  'final.tie': '{names} tie!',
   'final.finalStandings': 'Final Standings',
   'final.lastRoundBreakdown': 'Last Round Breakdown',
   'final.playAgain': 'Play Again',
@@ -174,6 +204,18 @@ const ms: Record<TranslationKey, string> = {
   'landing.roomCodePlaceholder': 'KOD BILIK',
   'landing.joinGame': 'Sertai Permainan',
   'landing.back': 'Kembali',
+  'landing.howToPlay': 'Cara Bermain',
+  'landing.howToPlay.title': 'Cara Bermain',
+  'landing.howToPlay.letterTitle': 'Setiap pusingan, satu huruf didedahkan',
+  'landing.howToPlay.letterDesc': 'Semua jawapan anda mesti bermula dengan huruf tersebut.',
+  'landing.howToPlay.fillTitle': 'Isi kategori',
+  'landing.howToPlay.fillDesc': 'Fikir pantas — ada pemasa! Tulis satu jawapan bagi setiap kategori.',
+  'landing.howToPlay.voteTitle': 'Undi jawapan',
+  'landing.howToPlay.voteDesc': 'Selepas masa tamat, undi sama ada jawapan pemain lain sah. Majoriti menentukan.',
+  'landing.howToPlay.scoreTitle': 'Kumpul mata',
+  'landing.howToPlay.scoreDesc': 'Jawapan unik yang sah = 1 mata. Jawapan sama = 0 mata. Huruf salah = 0 mata.',
+  'landing.howToPlay.winTitle': 'Mata terbanyak menang!',
+  'landing.howToPlay.winDesc': 'Main beberapa pusingan — jumlah mata tertinggi pada akhir permainan menang.',
   'lobby.title': 'Lobi Permainan',
   'lobby.roomCode': 'Kod Bilik',
   'lobby.players': 'Pemain ({count})',
@@ -198,6 +240,7 @@ const ms: Record<TranslationKey, string> = {
   'roundStart.getReady': 'Bersedia...',
   'playing.roundShort': 'Pusingan {round}/{total}',
   'playing.submittedCount': '{submitted}/{total} telah hantar',
+  'playing.wrongLetter': 'Mesti bermula dengan "{letter}"',
   'playing.tenSecondsWarning': 'Tinggal 10 saat! Jawapan akan dihantar automatik bila masa tamat!',
   'playing.placeholderLetter': '{letter}...',
   'playing.submitAnswers': 'Hantar Jawapan',
@@ -212,6 +255,7 @@ const ms: Record<TranslationKey, string> = {
   'validation.you': 'Anda',
   'validation.noAnswer': 'Tiada jawapan',
   'validation.duplicateSuffix': '(duplikasi)',
+  'validation.wrongLetterSuffix': '(huruf salah)',
   'validation.submitVotes': 'Hantar Undian',
   'results.roundResultsTitle': 'Keputusan Pusingan {round}',
   'results.roundOf': 'Pusingan {round} daripada {total}',
@@ -223,6 +267,7 @@ const ms: Record<TranslationKey, string> = {
   'results.waitingForHost': 'Menunggu hos untuk teruskan...',
   'final.gameOver': 'Permainan Tamat!',
   'final.wins': '{name} menang!',
+  'final.tie': '{names} seri!',
   'final.finalStandings': 'Kedudukan Akhir',
   'final.lastRoundBreakdown': 'Perincian Pusingan Terakhir',
   'final.playAgain': 'Main Semula',

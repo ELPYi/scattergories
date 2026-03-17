@@ -5,7 +5,7 @@ import { useI18n } from '../context/I18nContext';
 export default function Landing() {
   const { createRoom, joinRoom, state } = useGame();
   const { language, setLanguage, t, tError } = useI18n();
-  const [mode, setMode] = useState<'home' | 'create' | 'join'>('home');
+  const [mode, setMode] = useState<'home' | 'create' | 'join' | 'howto'>('home');
   const [nickname, setNickname] = useState('');
   const [roomCode, setRoomCode] = useState('');
 
@@ -69,6 +69,61 @@ export default function Landing() {
               disabled={!hasNickname}
             >
               {t('landing.joinRoom')}
+            </button>
+            <button
+              onClick={() => setMode('howto')}
+              className="text-primary-300 text-sm w-full text-center hover:text-white transition-colors py-1"
+            >
+              {t('landing.howToPlay')}
+            </button>
+          </div>
+        )}
+
+        {mode === 'howto' && (
+          <div className="card space-y-4 animate-slide-up">
+            <h2 className="font-display text-2xl text-center text-accent-400">{t('landing.howToPlay.title')}</h2>
+            <div className="space-y-3 text-sm text-primary-200">
+              <div className="flex gap-3">
+                <span className="text-2xl">🎲</span>
+                <div>
+                  <p className="font-bold text-white">{t('landing.howToPlay.letterTitle')}</p>
+                  <p>{t('landing.howToPlay.letterDesc')}</p>
+                </div>
+              </div>
+              <div className="flex gap-3">
+                <span className="text-2xl">✍️</span>
+                <div>
+                  <p className="font-bold text-white">{t('landing.howToPlay.fillTitle')}</p>
+                  <p>{t('landing.howToPlay.fillDesc')}</p>
+                </div>
+              </div>
+              <div className="flex gap-3">
+                <span className="text-2xl">🗳️</span>
+                <div>
+                  <p className="font-bold text-white">{t('landing.howToPlay.voteTitle')}</p>
+                  <p>{t('landing.howToPlay.voteDesc')}</p>
+                </div>
+              </div>
+              <div className="flex gap-3">
+                <span className="text-2xl">🏆</span>
+                <div>
+                  <p className="font-bold text-white">{t('landing.howToPlay.scoreTitle')}</p>
+                  <p>{t('landing.howToPlay.scoreDesc')}</p>
+                </div>
+              </div>
+              <div className="flex gap-3">
+                <span className="text-2xl">🥇</span>
+                <div>
+                  <p className="font-bold text-white">{t('landing.howToPlay.winTitle')}</p>
+                  <p>{t('landing.howToPlay.winDesc')}</p>
+                </div>
+              </div>
+            </div>
+            <button
+              onClick={() => setMode('home')}
+              className="text-primary-300 text-sm w-full text-center hover:text-white transition-colors"
+            >
+              ← {t('landing.back')}
             </button>
           </div>
         )}
