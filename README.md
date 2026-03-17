@@ -48,22 +48,3 @@ Opens on [http://localhost:5173](http://localhost:5173) (client) with the server
 ## License
 
 All Rights Reserved. See [LICENSE](LICENSE) for details.
-
-## Fly.io Deployment
-
-This repo now includes `fly.toml` and a production `Dockerfile`.
-
-1. Install Fly CLI and authenticate:
-   ```bash
-   fly auth login
-   ```
-2. Create the Fly app (first time only, if needed):
-   ```bash
-   fly apps create scattergories-online
-   ```
-3. Deploy:
-   ```bash
-   fly deploy
-   ```
-
-If `scattergories-online` is taken, update the `app` value in `fly.toml` and use that same name in `fly apps create`.
